@@ -1,9 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { nanoid } from "nanoid";
+import Confetti from "react-confetti";
 import Die from "./Die";
 
 function App() {
   const [dice, setDice] = useState(allNewDice());
+  const [tenzies, setTenzies] = useState(false);
+
+  useEffect(() => {
+    const allHeld = dice.every((die) => die.isHeld);
+    const firstValue = dice[0].value;
+    const allSameValue = dice.every((die) => die.value === firstValue);
+    if (allHeld && allSameValue) {
+      setTenzies(true);
+      console.log("You won!");
+    }
+  }, [dice]);
 
   function generateNewDie() {
     return {
@@ -22,11 +34,16 @@ function App() {
   }
 
   const rollDice = () => {
-    setDice((oldDice) =>
-      oldDice.map((die) => {
-        return die.isHeld ? die : generateNewDie();
-      })
-    );
+    if (!tenzies) {
+      setDice((oldDice) =>
+        oldDice.map((die) => {
+          return die.isHeld ? die : generateNewDie();
+        })
+      );
+    } else {
+      setTenzies(false);
+      setDice(allNewDice());
+    }
   };
 
   function holdDice(id) {
@@ -48,6 +65,7 @@ function App() {
 
   return (
     <main className="container">
+      {tenzies && <Confetti />}
       <div className="dice-wrapper text-center">
         <h1 className="font-bold mt-8 text-3xl text=[#2B283A]">Tenzies</h1>
         <p className="text-[#4A4E74] max-w-sm">
@@ -56,7 +74,7 @@ function App() {
         </p>
         <div className="dice-container">{diceEl}</div>
         <button className="roll-dice" onClick={rollDice}>
-          Roll
+          {tenzies ? "New Game" : "Roll"}
         </button>
       </div>
     </main>
